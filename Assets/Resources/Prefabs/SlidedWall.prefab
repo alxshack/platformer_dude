@@ -94,8 +94,8 @@ GameObject:
   - component: {fileID: 5802278215836215542}
   - component: {fileID: 1921587986225905114}
   m_Layer: 0
-  m_Name: Wall
-  m_TagString: Untagged
+  m_Name: SlidedWall
+  m_TagString: SlidedWall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -109,7 +109,7 @@ Transform:
   m_GameObject: {fileID: 9099601296096118864}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.391875, y: 4.5084376, z: 1}
   m_Children:
   - {fileID: 214828717466230268}
   m_Father: {fileID: 0}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -23,12 +24,18 @@ public class Character : MonoBehaviour
     [SerializeField] private float wallSlideDragValue = 15.0f;
     [SerializeField] private float rearJumpForce = 3.0f;
     [SerializeField] private float rearJumpHoldTime = 0.5f;
+    [SerializeField] private float fallMultiplier = 2.5f;
+    [SerializeField] private int maxHealthCost = 100;
 
+    public HealthBar healthBar;
+    public Text moneyText;
+    
     private Rigidbody2D _rigidbody;
+    
+    private int _moneyCost, _manaCost, _healthCost;
     
     private CollisionState _collisionState;
     private MoveState _moveState;
-    private bool _isDebugMode = true;
     private float _overlapCircleRadius = 0.05f;
     private float _defaultDragValue;
 
@@ -36,12 +43,9 @@ public class Character : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody2D>();
         _defaultDragValue = _rigidbody.drag;
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+        _moneyCost = 0;
+        _healthCost = maxHealthCost;
+        healthBar.SetMaxHealth(maxHealthCost);
     }
 
     private void FixedUpdate()
@@ -62,11 +66,11 @@ public class Character : MonoBehaviour
         {
             _collisionState = CollisionState.Grounded;
         }
-        else if (rightWallColliders.Length > 1)
+        else if (rightWallColliders.Any(elem => elem.tag == "SlidedWall"))
         {
             _collisionState = CollisionState.RightWalled;
         }
-        else if (leftWallColliders.Length > 1)
+        else if (leftWallColliders.Any(elem => elem.tag == "SlidedWall"))
         {
             _collisionState = CollisionState.LeftWalled;
         }
@@ -98,15 +102,24 @@ public class Character : MonoBehaviour
                 Fight();
             }
 
-            if (_isDebugMode)
+            if(Input.GetKeyDown(KeyCode.D))
             {
-                DebugState();
+                TakeDamage(10);
             }
-            
+
+            BetterJumpModifier();
         }
         catch (Exception exception)
         {
             print(exception.Message);
+        }
+    }
+
+    private void BetterJumpModifier()
+    {
+        if (_rigidbody.velocity.y < 0)
+        {
+            _rigidbody.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime; // @todo код добавлен из урока, почему тут -1, хотя можно задать меньшее значение поля?
         }
     }
 
@@ -164,9 +177,66 @@ public class Character : MonoBehaviour
         position = Vector3.MoveTowards(position, position + direction, speed * Time.deltaTime);
         transform.position = position;
         _moveState = MoveState.Run;
+    }
+    
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        string collisionTag = collision.gameObject.tag;
+        GameObject colObj = collision.gameObject;
+    }
+
+    private void OnTriggerEnter2D(Collider2D trigger)
+    {
+        Collider2D obTrigger = trigger;
         
-        print($"direction = {direction}");
+        switch (obTrigger.tag)
+        {
+            case "Money":
+                int costValue = obTrigger.GetComponent<Money>().CostValue;
+                AddMoney(costValue);
+                break;
+            case "Mana":
+                int manaValue = obTrigger.GetComponent<Mana>().CostValue;
+                AddMana(manaValue);
+                break;
+            case "Health":
+                int healthValue = obTrigger.GetComponent<Health>().CostValue;
+                AddHealth(healthValue);
+                break;
+            default:
+                break;
+        }
         
+        if (obTrigger.GetComponent<Catchable>())
+        {
+            Destroy(obTrigger.gameObject);
+        }
+        
+    }
+
+    private void AddMoney(int cost)
+    {
+        _moneyCost += cost;
+        moneyText.text = _moneyCost.ToString();
+        print($"moneyCost = {_moneyCost}");
+    }
+    
+    private void AddMana(int cost)
+    {
+        _manaCost += cost;
+        print($"manaCost = {_manaCost}");
+    }
+    
+    private void AddHealth(int cost)
+    {
+        _healthCost += cost;
+        print($"healthCost = {_manaCost}");
+    }
+    
+    private void TakeDamage(int damage)
+    {
+        _healthCost -= damage;
+        healthBar.SetHealth(_healthCost);
     }
 
     private void OnDrawGizmosSelected()
@@ -174,12 +244,6 @@ public class Character : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, 0.05f);
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 0.5f + Vector3.right * 0.5f, 0.05f);
         Gizmos.DrawWireSphere(transform.position + Vector3.up * 0.5f - Vector3.right * 0.5f, 0.05f);
-    }
-
-    private void DebugState()
-    {
-        print($"_collisionState = {_collisionState}");
-        print($"_moveState = {_moveState}");
     }
     
 }
