@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// @todo сделать абстрактный класс, экстендить из него. ManaBar тоже
 public class HealthBar : MonoBehaviour
 {
 

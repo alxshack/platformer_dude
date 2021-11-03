@@ -26,8 +26,10 @@ public class Character : MonoBehaviour
     [SerializeField] private float rearJumpHoldTime = 0.5f;
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private int maxHealthCost = 100;
+    [SerializeField] private int maxManaCost = 100;
 
     public HealthBar healthBar;
+    public ManaBar manaBar;
     public Text moneyText;
     
     private Rigidbody2D _rigidbody;
@@ -44,8 +46,10 @@ public class Character : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
         _defaultDragValue = _rigidbody.drag;
         _moneyCost = 0;
+        _manaCost = 0;
         _healthCost = maxHealthCost;
         healthBar.SetMaxHealth(maxHealthCost);
+        manaBar.SetMaxMana(maxManaCost);
     }
 
     private void FixedUpdate()
@@ -125,7 +129,7 @@ public class Character : MonoBehaviour
 
     private void ModifyGravityScale()
     {
-        if (_collisionState == CollisionState.LeftWalled || _collisionState == CollisionState.RightWalled)
+        if ((_collisionState == CollisionState.LeftWalled || _collisionState == CollisionState.RightWalled) && (_rigidbody.velocity.y < 0))
         {
             _rigidbody.drag = wallSlideDragValue;
         }
@@ -154,6 +158,10 @@ public class Character : MonoBehaviour
         {
             localJumpForce = transform.up * jumpForce;
         }
+        
+        // @todo посмотреть, как адекватно обнулить ускорение только по Y
+        // var zeroVelocity = Vector2.zero;
+        _rigidbody.velocity = Vector2.zero;
         _rigidbody.AddForce(localJumpForce, ForceMode2D.Impulse);
     }
     
@@ -218,19 +226,18 @@ public class Character : MonoBehaviour
     {
         _moneyCost += cost;
         moneyText.text = _moneyCost.ToString();
-        print($"moneyCost = {_moneyCost}");
     }
     
     private void AddMana(int cost)
     {
         _manaCost += cost;
-        print($"manaCost = {_manaCost}");
+        manaBar.SetMana(_manaCost);
     }
     
     private void AddHealth(int cost)
     {
         _healthCost += cost;
-        print($"healthCost = {_manaCost}");
+        healthBar.SetHealth(_healthCost);
     }
     
     private void TakeDamage(int damage)

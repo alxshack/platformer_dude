@@ -84,13 +84,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 4
-  jumpForce: 2
+  jumpForce: 1.7
   wallSlideDragValue: 5
-  rearJumpForce: 1.1
+  rearJumpForce: 1
   rearJumpHoldTime: 0.35
   fallMultiplier: 2.5
   maxHealthCost: 100
+  maxManaCost: 100
   healthBar: {fileID: 0}
+  manaBar: {fileID: 0}
+  moneyText: {fileID: 0}
 --- !u!1 &6943041919050061068
 GameObject:
   m_ObjectHideFlags: 0
